@@ -4,12 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <title>Canvas Drawing Tool</title>
-  <script type="module" crossorigin src="/assets/index-CGFYrxpF.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-BDJmiEXS.css">
+  <script type="module" crossorigin src="/assets/index-8n93Vija.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DpUheWgJ.css">
 </head>
 
 <body class="flex bg-gray-100 min-h-screen overflow-hidden">
-  <!-- ✅ 좌측 OffCanvas 패널 -->
   <div id="sidebar"
        class="fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-50">
     <div class="p-4 border-b flex justify-between items-center">
@@ -29,7 +28,6 @@
         <option value="circle">원</option>
       </select>
 
-      <!-- ✅ 모눈종이 체크박스 -->
       <label class="flex items-center gap-2">
         <input type="checkbox" id="gridToggle" class="w-5 h-5" />
         모눈 종이
@@ -38,16 +36,26 @@
       <button id="clearBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Clear</button>
       <button id="savePngBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save PNG</button>
       <button id="saveJpgBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save JPG</button>
+      <button id="saveSvgServerBtn" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">Save SVG to Server</button>
+
+      <div class="border-t pt-3 flex flex-col gap-2">
+        <select id="savedSvgSelect" class="border rounded p-2">
+          <option value="">저장된 SVG 선택</option>
+        </select>
+        <div class="flex gap-2">
+          <button id="refreshSvgListBtn" class="px-3 py-2 bg-slate-500 text-white rounded hover:bg-slate-600 text-sm">목록 새로고침</button>
+          <button id="loadSvgBtn" class="px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 text-sm">SVG 불러오기</button>
+        </div>
+        <p id="statusText" class="text-xs text-slate-600">SVG 목록을 조회 중입니다...</p>
+      </div>
     </div>
   </div>
 
-  <!-- ✅ 사이드바 열기 버튼 -->
   <button id="openSidebar"
           class="fixed top-4 left-4 z-40 px-3 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
     ☰ 도구
   </button>
 
-  <!-- 메인 캔버스 영역 -->
   <div class="flex-1 flex justify-center items-center p-4 w-full">
     <div class="relative shadow-lg rounded w-full h-full">
       <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white rounded"></canvas>
@@ -56,17 +64,16 @@
   </div>
 
   <script>
-    // 사이드바 열기/닫기
-    const sidebar = document.getElementById("sidebar");
-    const openSidebarBtn = document.getElementById("openSidebar");
-    const closeSidebarBtn = document.getElementById("closeSidebar");
+    const sidebar = document.getElementById('sidebar');
+    const openSidebarBtn = document.getElementById('openSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
 
-    openSidebarBtn.addEventListener("click", () => {
-      sidebar.classList.remove("-translate-x-full");
+    openSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.remove('-translate-x-full');
     });
 
-    closeSidebarBtn.addEventListener("click", () => {
-      sidebar.classList.add("-translate-x-full");
+    closeSidebarBtn.addEventListener('click', () => {
+      sidebar.classList.add('-translate-x-full');
     });
   </script>
 </body>
