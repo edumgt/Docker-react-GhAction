@@ -3,79 +3,238 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Canvas Drawing Tool</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Canvas Drawing</title>
   <link rel="stylesheet" href="/src/style.css" />
   <script type="module" src="/src/main.js"></script>
 </head>
 
-<body class="flex bg-gray-100 min-h-screen overflow-hidden">
-  <div id="sidebar"
-       class="fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform -translate-x-full transition-transform duration-300 z-50">
-    <div class="p-4 border-b flex justify-between items-center">
-      <h2 class="text-lg font-bold">🛠 도구</h2>
-      <button id="closeSidebar" class="text-gray-500 hover:text-black">✖</button>
-    </div>
+<body class="bg-gray-100 min-h-screen">
 
-    <div class="p-4 flex flex-col gap-4">
-      <input type="color" id="colorPicker" value="#000000" class="w-12 h-12 border rounded" />
-      <input type="range" id="brushSize" min="1" max="50" value="5" class="w-full" />
+  <!-- ════════════════════ LOGIN PAGE ════════════════════ -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
 
-      <select id="toolSelect" class="border rounded p-2">
-        <option value="pen">펜</option>
-        <option value="eraser">지우개</option>
-        <option value="line">직선</option>
-        <option value="rect">사각형</option>
-        <option value="circle">원</option>
-      </select>
+      <div class="text-center mb-8">
+        <div class="text-6xl mb-3">🎨</div>
+        <h1 class="text-3xl font-bold text-gray-800">AI Canvas</h1>
+        <p class="text-gray-500 mt-2 text-sm">로그인하여 그림을 그리고 AI로 발전시켜 보세요</p>
+      </div>
 
-      <label class="flex items-center gap-2">
-        <input type="checkbox" id="gridToggle" class="w-5 h-5" />
-        모눈 종이
-      </label>
-
-      <button id="clearBtn" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Clear</button>
-      <button id="savePngBtn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Save PNG</button>
-      <button id="saveJpgBtn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save JPG</button>
-      <button id="saveSvgServerBtn" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600">Save SVG to Server</button>
-
-      <div class="border-t pt-3 flex flex-col gap-2">
-        <select id="savedSvgSelect" class="border rounded p-2">
-          <option value="">저장된 SVG 선택</option>
-        </select>
-        <div class="flex gap-2">
-          <button id="refreshSvgListBtn" class="px-3 py-2 bg-slate-500 text-white rounded hover:bg-slate-600 text-sm">목록 새로고침</button>
-          <button id="loadSvgBtn" class="px-3 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-600 text-sm">SVG 불러오기</button>
+      <form id="loginForm" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+          <input type="email" id="loginEmail" placeholder="test1@test.com" autocomplete="email"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
         </div>
-        <p id="statusText" class="text-xs text-slate-600">SVG 목록을 조회 중입니다...</p>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+          <input type="password" id="loginPassword" placeholder="••••••" autocomplete="current-password"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
+        </div>
+
+        <p id="loginError" class="text-red-500 text-sm hidden"></p>
+
+        <button type="submit"
+                class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+          로그인
+        </button>
+      </form>
+
+      <div class="mt-5 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500">
+        <p class="font-semibold mb-1 text-gray-600">테스트 계정</p>
+        <p>📧 test1@test.com &nbsp;/&nbsp; 🔑 123456</p>
+        <p>📧 test2@test.com &nbsp;/&nbsp; 🔑 123456</p>
       </div>
     </div>
   </div>
 
-  <button id="openSidebar"
-          class="fixed top-4 left-4 z-40 px-3 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700">
-    ☰ 도구
-  </button>
+  <!-- ════════════════════ CANVAS APP ════════════════════ -->
+  <div id="appPage" style="display:none; flex-direction:column" class="h-screen overflow-hidden">
 
-  <div class="flex-1 flex justify-center items-center p-4 w-full">
-    <div class="relative shadow-lg rounded w-full h-full">
-      <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white rounded"></canvas>
-      <canvas id="drawingCanvas" class="absolute top-0 left-0 rounded"></canvas>
+    <!-- ── Offcanvas backdrop ─────────────────────────────────── -->
+    <div id="offcanvasBackdrop"
+         class="fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity"
+         hidden></div>
+
+    <!-- ── Left offcanvas ─────────────────────────────────────── -->
+    <div id="offcanvas"
+         class="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-50 flex flex-col
+                transform -translate-x-full transition-transform duration-300">
+
+      <!-- User header -->
+      <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-5 py-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+          👤
+        </div>
+        <div class="min-w-0">
+          <p id="userEmailDisplay" class="text-sm font-semibold truncate">user@example.com</p>
+          <p class="text-xs text-indigo-200">로그인 중</p>
+        </div>
+        <button id="closeOffcanvas" class="ml-auto text-white hover:text-indigo-200 text-lg flex-shrink-0">✕</button>
+      </div>
+
+      <!-- Drawing tools section -->
+      <div class="p-4 border-b bg-gray-50">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">그리기 도구</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">색상</label>
+            <input type="color" id="colorPicker" value="#000000"
+                   class="w-full h-9 border border-gray-300 rounded cursor-pointer" />
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">도구</label>
+            <select id="toolSelect"
+                    class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <option value="pen">🖊 펜</option>
+              <option value="eraser">🧹 지우개</option>
+              <option value="line">📏 직선</option>
+              <option value="rect">⬜ 사각형</option>
+              <option value="circle">⭕ 원</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="text-xs text-gray-500 block mb-1">
+            브러시 굵기: <span id="brushSizeLabel" class="font-semibold text-indigo-600">5</span>px
+          </label>
+          <input type="range" id="brushSize" min="1" max="50" value="5"
+                 class="w-full accent-indigo-600" />
+        </div>
+
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" id="gridToggle" class="w-4 h-4 accent-indigo-600" />
+          <span class="text-sm text-gray-700">모눈 종이</span>
+        </label>
+      </div>
+
+      <!-- Saved works list -->
+      <div class="flex-1 overflow-y-auto flex flex-col">
+        <div class="px-4 py-3 border-b flex items-center justify-between bg-white sticky top-0">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">저장된 작업</p>
+          <button id="refreshSavesBtn"
+                  class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+            새로고침
+          </button>
+        </div>
+        <div id="savesList" class="flex-1 p-2">
+          <p class="text-sm text-gray-400 text-center py-6">저장된 작업이 없습니다</p>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="p-4 border-t bg-white">
+        <button id="logoutBtn"
+                class="w-full py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-200 font-medium">
+          🚪 로그아웃
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Top toolbar ─────────────────────────────────────────── -->
+    <div class="bg-white shadow-sm border-b px-3 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+      <button id="openOffcanvas"
+              class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 text-sm font-medium flex-shrink-0">
+        ☰ 메뉴
+      </button>
+
+      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+      <button id="clearBtn"
+              class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex-shrink-0">
+        🗑 지우기
+      </button>
+      <button id="savePngBtn"
+              class="px-3 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 text-sm font-medium flex-shrink-0">
+        📥 PNG
+      </button>
+      <button id="saveJpgBtn"
+              class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm font-medium flex-shrink-0">
+        📥 JPG
+      </button>
+
+      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+      <button id="saveToServerBtn"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+        💾 저장
+      </button>
+
+      <button id="aiHelpBtn"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+        🤖 AI Help
+      </button>
+
+      <span id="statusText" class="ml-auto text-xs text-gray-500 flex-shrink-0"></span>
+    </div>
+
+    <!-- ── Canvas area ─────────────────────────────────────────── -->
+    <div class="flex-1 relative overflow-hidden p-2 bg-gray-100">
+      <div class="relative w-full h-full rounded-xl shadow-md overflow-hidden">
+        <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white"></canvas>
+        <canvas id="drawingCanvas"    class="absolute top-0 left-0"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /appPage -->
+
+  <!-- ════════════════════ AI HELP MODAL ════════════════════ -->
+  <div id="aiModal"
+       class="fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4"
+       hidden>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+
+      <div class="px-5 py-4 border-b flex items-center justify-between flex-shrink-0">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          🤖 AI 스케치 분석
+        </h2>
+        <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-5">
+
+        <!-- Loading -->
+        <div id="aiLoading" class="flex flex-col items-center justify-center py-12 gap-4">
+          <div class="w-14 h-14 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-gray-600 text-sm">AI(LLaVA)가 그림을 분석 중입니다…</p>
+          <p class="text-gray-400 text-xs">최초 실행 시 모델 로딩에 수십 초가 걸릴 수 있습니다</p>
+        </div>
+
+        <!-- Result -->
+        <div id="aiResult" hidden>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-shrink-0 text-center">
+              <p class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">원본 스케치</p>
+              <img id="aiSketchPreview"
+                   class="w-36 h-36 object-contain border-2 border-gray-200 rounded-xl mx-auto" />
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">AI 이미지 묘사 (LLaVA)</p>
+              <div id="aiDescription"
+                   class="text-sm text-gray-700 leading-relaxed bg-purple-50 rounded-xl p-4 border border-purple-100 whitespace-pre-wrap">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="aiError" hidden>
+          <div class="text-center py-8">
+            <div class="text-5xl mb-3">⚠️</div>
+            <p id="aiErrorMsg" class="text-red-600 text-sm font-medium mb-3"></p>
+            <div class="bg-gray-50 rounded-lg px-4 py-3 text-left">
+              <p class="text-xs text-gray-500 font-medium mb-1">해결 방법:</p>
+              <code id="aiErrorHint" class="text-xs text-gray-700 font-mono break-all"></code>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /modal body -->
     </div>
   </div>
 
-  <script>
-    const sidebar = document.getElementById('sidebar');
-    const openSidebarBtn = document.getElementById('openSidebar');
-    const closeSidebarBtn = document.getElementById('closeSidebar');
-
-    openSidebarBtn.addEventListener('click', () => {
-      sidebar.classList.remove('-translate-x-full');
-    });
-
-    closeSidebarBtn.addEventListener('click', () => {
-      sidebar.classList.add('-translate-x-full');
-    });
-  </script>
 </body>
 
 </html>
