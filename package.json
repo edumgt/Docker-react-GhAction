@@ -11,6 +11,11 @@
     "start": "node server.js",
     "docker:run:3000": "bash scripts/run-docker-3000.sh"
   },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.3"
+  },
   "devDependencies": {
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
