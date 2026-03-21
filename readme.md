@@ -205,6 +205,27 @@ DB_HOST=localhost npm run dev:server
 
 ![alt text](image-3.png)
 
+---
+
+## 🎬 Playwright 자동화 데모 (원 2개 그리기 + AI 분석)
+
+아래 스크린샷은 **Playwright** 브라우저 자동화로 캡처한 실제 실행 화면입니다.
+
+### 1️⃣ 로그인 후 캔버스에 원 2개 그리기
+
+`test1@test.com` 계정으로 로그인한 뒤, **⭕ 원** 도구를 선택하여 파란색 원과 빨간색 원을 각각 그린 결과입니다.
+
+![캔버스 - 원 2개](screenshots/canvas-two-circles.png)
+
+### 2️⃣ 🤖 AI Help — LLaVA 스케치 분석 결과
+
+**AI Help** 버튼을 클릭하면 Ollama LLaVA 모델이 캔버스 스케치를 분석하여 한국어로 이미지 묘사를 반환합니다.
+
+![AI 분석 결과](screenshots/ai-help-result.png)
+
+> **AI 묘사 요약 (LLaVA 창의적 해석):**  
+> 이 스케치는 두 개의 완벽한 원으로 구성되어 있습니다. 파란색 원은 부드러운 파스텔 블루 톤의 비눗방울처럼 보이며, 빨간색 원은 따뜻한 빛으로 물든 일몰의 태양을 연상시킵니다. 두 원은 서로 대비를 이루면서도 조화롭게 공존하며, 전체적으로 평온하고 균형 잡힌 구도를 형성하고 있습니다.
+
 # GitHub Actions + Docker Hub 연동 노트
 
 이 문서는 GitHub Actions로 Docker 이미지를 빌드/푸시할 때 필요한 설정과 트러블슈팅을 정리한 기록입니다.
