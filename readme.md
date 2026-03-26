@@ -217,8 +217,8 @@ DB_HOST=localhost npm run dev:server
 
 ![캔버스 - 원 2개](screenshots/canvas-two-circles.png)
  
-
-### test
+### test1
+### test2
 
 ### 2️⃣ 🤖 AI Help — LLaVA 스케치 분석 결과
 
