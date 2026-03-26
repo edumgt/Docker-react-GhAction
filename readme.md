@@ -216,6 +216,9 @@ DB_HOST=localhost npm run dev:server
 `test1@test.com` 계정으로 로그인한 뒤, **⭕ 원** 도구를 선택하여 파란색 원과 빨간색 원을 각각 그린 결과입니다.
 
 ![캔버스 - 원 2개](screenshots/canvas-two-circles.png)
+ 
+
+### test
 
 ### 2️⃣ 🤖 AI Help — LLaVA 스케치 분석 결과
 
