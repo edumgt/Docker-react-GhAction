@@ -217,8 +217,6 @@ DB_HOST=localhost npm run dev:server
 
 ![캔버스 - 원 2개](screenshots/canvas-two-circles.png)
  
-### test1
-### test2
 
 ### 2️⃣ 🤖 AI Help — LLaVA 스케치 분석 결과
 
@@ -228,68 +226,3 @@ DB_HOST=localhost npm run dev:server
 
 > **AI 묘사 요약 (LLaVA 창의적 해석):**  
 > 이 스케치는 두 개의 완벽한 원으로 구성되어 있습니다. 파란색 원은 부드러운 파스텔 블루 톤의 비눗방울처럼 보이며, 빨간색 원은 따뜻한 빛으로 물든 일몰의 태양을 연상시킵니다. 두 원은 서로 대비를 이루면서도 조화롭게 공존하며, 전체적으로 평온하고 균형 잡힌 구도를 형성하고 있습니다.
-
-# GitHub Actions + Docker Hub 연동 노트
-
-이 문서는 GitHub Actions로 Docker 이미지를 빌드/푸시할 때 필요한 설정과 트러블슈팅을 정리한 기록입니다.
-
-## 1) Docker Hub 인증 정보 저장
-
-GitHub 저장소에서 **Settings → Secrets and variables → Actions** 로 이동해 다음 값을 등록합니다.
-
-### Secrets
-- `DOCKERHUB_USERNAME`: Docker Hub 계정 ID
-- `DOCKERHUB_TOKEN`: Docker Hub Personal Access Token(PAT)
-
-![Docker Hub Secrets 설정](image-2.png)
-
-### Variables
-- `IMAGE_NAME`: 이미지 이름(예: `my-app`)
-- `ENV`: 환경 구분 값(예: `prod`)
-
-## 2) GitHub Actions 워크플로 예시
-
-```yaml
-name: CI/CD with Docker Hub
-
-on:
-  push:
-    branches: [ "main" ]
-
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
-```
-
-## 3) 트러블슈팅
-
-### Dockerfile을 찾을 수 없을 때
-
-```
-ERROR: failed to read dockerfile: open Dockerfile: no such file or directory
-```
-
-루트에 `Dockerfile`을 두거나 `file` 경로를 지정합니다.
-
-### 토큰 권한 부족(401 Unauthorized)
-
-Docker Hub PAT를 **Read & Write** 권한으로 재발급하고 `tags`를 정확히 지정합니다.

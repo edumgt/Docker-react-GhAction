@@ -19,23 +19,8 @@ services:
       retries: 12
       start_period: 40s
 
-  # ── Ollama (LLaVA vision model for AI sketch enhancement) ────────
-  # First-time setup: docker compose exec ollama ollama pull llava
-  ollama:
-    image: ollama/ollama:latest
-    restart: unless-stopped
-    volumes:
-      - ollama_data:/root/.ollama
-    ports:
-      - "11434:11434"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/version || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-
-  # ── App (Node.js + Vite build) ────────────────────────────────────
+  # ── App (Python FastAPI) ─────────────────────────────────────────
+  # Ollama runs on the host — reachable via host.docker.internal:11434
   app:
     build: .
     restart: unless-stopped
@@ -49,14 +34,12 @@ services:
       DB_PASSWORD: canvaspass
       DB_NAME: canvasdb
       JWT_SECRET: "${JWT_SECRET:-change-this-secret-in-production-use-a-long-random-string}"
-      OLLAMA_URL: "http://ollama:11434"
+      OLLAMA_URL: "http://host.docker.internal:11434"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
-    volumes:
-      - storage_data:/app/storage
 
 volumes:
   db_data:
-  ollama_data:
-  storage_data:

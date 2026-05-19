@@ -1,17 +1,7 @@
-FROM node:20-alpine AS build
+FROM python:3.12-slim
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-RUN npm run build
-
-FROM node:20-alpine
-WORKDIR /app
-ENV NODE_ENV=production
-COPY package*.json ./
-RUN npm ci --omit=dev
-COPY --from=build /app/dist ./dist
-COPY server.js ./server.js
-RUN mkdir -p storage
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "3000"]

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Canvas Drawing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    canvas { cursor: crosshair; }
+  </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- ════════════════════ LOGIN PAGE ════════════════════ -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
+
+      <div class="text-center mb-8">
+        <div class="text-6xl mb-3">🎨</div>
+        <h1 class="text-3xl font-bold text-gray-800">AI Canvas</h1>
+        <p class="text-gray-500 mt-2 text-sm">로그인하여 그림을 그리고 AI로 발전시켜 보세요</p>
+      </div>
+
+      <form id="loginForm" class="flex flex-col gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">이메일</label>
+          <input type="email" id="loginEmail" placeholder="test1@test.com" autocomplete="email"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">비밀번호</label>
+          <input type="password" id="loginPassword" placeholder="••••••" autocomplete="current-password"
+                 class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" />
+        </div>
+
+        <p id="loginError" class="text-red-500 text-sm hidden"></p>
+
+        <button type="submit"
+                class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+          로그인
+        </button>
+      </form>
+
+      <div class="mt-5 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500">
+        <p class="font-semibold mb-1 text-gray-600">테스트 계정</p>
+        <p>📧 test1@test.com &nbsp;/&nbsp; 🔑 123456</p>
+        <p>📧 test2@test.com &nbsp;/&nbsp; 🔑 123456</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ CANVAS APP ════════════════════ -->
+  <div id="appPage" style="display:none; flex-direction:column" class="h-screen overflow-hidden">
+
+    <!-- ── Offcanvas backdrop ─────────────────────────────────── -->
+    <div id="offcanvasBackdrop"
+         class="fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity"
+         hidden></div>
+
+    <!-- ── Left offcanvas ─────────────────────────────────────── -->
+    <div id="offcanvas"
+         class="fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-50 flex flex-col
+                transform -translate-x-full transition-transform duration-300">
+
+      <!-- User header -->
+      <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-5 py-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+          👤
+        </div>
+        <div class="min-w-0">
+          <p id="userEmailDisplay" class="text-sm font-semibold truncate">user@example.com</p>
+          <p class="text-xs text-indigo-200">로그인 중</p>
+        </div>
+        <button id="closeOffcanvas" class="ml-auto text-white hover:text-indigo-200 text-lg flex-shrink-0">✕</button>
+      </div>
+
+      <!-- Drawing tools section -->
+      <div class="p-4 border-b bg-gray-50">
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">그리기 도구</p>
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">색상</label>
+            <input type="color" id="colorPicker" value="#000000"
+                   class="w-full h-9 border border-gray-300 rounded cursor-pointer" />
+          </div>
+          <div>
+            <label class="text-xs text-gray-500 mb-1 block">도구</label>
+            <select id="toolSelect"
+                    class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
+              <option value="pen">🖊 펜</option>
+              <option value="eraser">🧹 지우개</option>
+              <option value="line">📏 직선</option>
+              <option value="rect">⬜ 사각형</option>
+              <option value="circle">⭕ 원</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="text-xs text-gray-500 block mb-1">
+            브러시 굵기: <span id="brushSizeLabel" class="font-semibold text-indigo-600">5</span>px
+          </label>
+          <input type="range" id="brushSize" min="1" max="50" value="5"
+                 class="w-full accent-indigo-600" />
+        </div>
+
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+          <input type="checkbox" id="gridToggle" class="w-4 h-4 accent-indigo-600" />
+          <span class="text-sm text-gray-700">모눈 종이</span>
+        </label>
+      </div>
+
+      <!-- Saved works list -->
+      <div class="flex-1 overflow-y-auto flex flex-col">
+        <div class="px-4 py-3 border-b flex items-center justify-between bg-white sticky top-0">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">저장된 작업</p>
+          <button id="refreshSavesBtn"
+                  class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+            새로고침
+          </button>
+        </div>
+        <div id="savesList" class="flex-1 p-2">
+          <p class="text-sm text-gray-400 text-center py-6">저장된 작업이 없습니다</p>
+        </div>
+      </div>
+
+      <!-- Logout -->
+      <div class="p-4 border-t bg-white">
+        <button id="logoutBtn"
+                class="w-full py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-200 font-medium">
+          🚪 로그아웃
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Top toolbar ─────────────────────────────────────────── -->
+    <div class="bg-white shadow-sm border-b px-3 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+      <button id="openOffcanvas"
+              class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 text-sm font-medium flex-shrink-0">
+        ☰ 메뉴
+      </button>
+
+      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+      <button id="clearBtn"
+              class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex-shrink-0">
+        🗑 지우기
+      </button>
+      <button id="savePngBtn"
+              class="px-3 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 text-sm font-medium flex-shrink-0">
+        📥 PNG
+      </button>
+      <button id="saveJpgBtn"
+              class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm font-medium flex-shrink-0">
+        📥 JPG
+      </button>
+
+      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+      <button id="saveToServerBtn"
+              class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+        💾 저장
+      </button>
+
+      <button id="aiHelpBtn"
+              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+        🤖 AI Help
+      </button>
+
+      <span id="statusText" class="ml-auto text-xs text-gray-500 flex-shrink-0"></span>
+    </div>
+
+    <!-- ── Canvas area ─────────────────────────────────────────── -->
+    <div class="flex-1 relative overflow-hidden p-2 bg-gray-100">
+      <div class="relative w-full h-full rounded-xl shadow-md overflow-hidden">
+        <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white"></canvas>
+        <canvas id="drawingCanvas"    class="absolute top-0 left-0"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /appPage -->
+
+  <!-- ════════════════════ AI HELP MODAL ════════════════════ -->
+  <div id="aiModal"
+       class="fixed inset-0 bg-black bg-opacity-60 z-[60] flex items-center justify-center p-4"
+       style="display:none">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col">
+
+      <div class="px-5 py-4 border-b flex items-center justify-between flex-shrink-0">
+        <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+          🤖 AI 스케치 분석
+        </h2>
+        <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-5">
+
+        <!-- Loading -->
+        <div id="aiLoading" class="flex flex-col items-center justify-center py-12 gap-4">
+          <div class="w-14 h-14 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+          <p class="text-gray-600 text-sm">AI(LLaVA 34B)가 그림을 분석 중입니다…</p>
+          <p class="text-gray-400 text-xs">최초 실행 시 모델 로딩에 수십 초가 걸릴 수 있습니다</p>
+        </div>
+
+        <!-- Result -->
+        <div id="aiResult" hidden>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-shrink-0 text-center">
+              <p class="text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">원본 스케치</p>
+              <img id="aiSketchPreview"
+                   class="w-36 h-36 object-contain border-2 border-gray-200 rounded-xl mx-auto" />
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">AI 이미지 묘사 (LLaVA 34B)</p>
+              <div id="aiDescription"
+                   class="text-sm text-gray-700 leading-relaxed bg-purple-50 rounded-xl p-4 border border-purple-100 whitespace-pre-wrap">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="aiError" hidden>
+          <div class="text-center py-8">
+            <div class="text-5xl mb-3">⚠️</div>
+            <p id="aiErrorMsg" class="text-red-600 text-sm font-medium mb-3"></p>
+            <div class="bg-gray-50 rounded-lg px-4 py-3 text-left">
+              <p class="text-xs text-gray-500 font-medium mb-1">해결 방법:</p>
+              <code id="aiErrorHint" class="text-xs text-gray-700 font-mono break-all"></code>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /modal body -->
+    </div>
+  </div>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────
+    var drawing = false;
+    var startX = 0, startY = 0;
+    var brushColor = '#000000';
+    var brushSize = 5;
+    var currentTool = 'pen';
+    var useGrid = false;
+    var authToken = localStorage.getItem('canvas_token');
+    var currentUser = null;
+    var snapshotBeforeShape = null;
+    var hasContent = false;
+
+    // ── DOM refs ───────────────────────────────────────────────────────
+    var loginPage         = document.getElementById('loginPage');
+    var appPage           = document.getElementById('appPage');
+    var loginForm         = document.getElementById('loginForm');
+    var loginEmail        = document.getElementById('loginEmail');
+    var loginPassword     = document.getElementById('loginPassword');
+    var loginError        = document.getElementById('loginError');
+
+    var offcanvas         = document.getElementById('offcanvas');
+    var offcanvasBackdrop = document.getElementById('offcanvasBackdrop');
+    var openOffcanvasBtn  = document.getElementById('openOffcanvas');
+    var closeOffcanvasBtn = document.getElementById('closeOffcanvas');
+    var userEmailDisplay  = document.getElementById('userEmailDisplay');
+    var logoutBtn         = document.getElementById('logoutBtn');
+    var savesList         = document.getElementById('savesList');
+    var refreshSavesBtn   = document.getElementById('refreshSavesBtn');
+
+    var bgCanvas   = document.getElementById('backgroundCanvas');
+    var bgCtx      = bgCanvas.getContext('2d');
+    var drawCanvas = document.getElementById('drawingCanvas');
+    var drawCtx    = drawCanvas.getContext('2d');
+
+    var colorPicker     = document.getElementById('colorPicker');
+    var brushSizeInput  = document.getElementById('brushSize');
+    var brushSizeLabel  = document.getElementById('brushSizeLabel');
+    var toolSelect      = document.getElementById('toolSelect');
+    var gridToggle      = document.getElementById('gridToggle');
+    var clearBtn        = document.getElementById('clearBtn');
+    var savePngBtn      = document.getElementById('savePngBtn');
+    var saveJpgBtn      = document.getElementById('saveJpgBtn');
+    var saveToServerBtn = document.getElementById('saveToServerBtn');
+    var aiHelpBtn       = document.getElementById('aiHelpBtn');
+    var statusText      = document.getElementById('statusText');
+
+    var aiModal         = document.getElementById('aiModal');
+    var closeAiModalBtn = document.getElementById('closeAiModal');
+    var aiLoading       = document.getElementById('aiLoading');
+    var aiResult        = document.getElementById('aiResult');
+    var aiError         = document.getElementById('aiError');
+    var aiSketchPreview = document.getElementById('aiSketchPreview');
+    var aiDescription   = document.getElementById('aiDescription');
+    var aiErrorMsg      = document.getElementById('aiErrorMsg');
+    var aiErrorHint     = document.getElementById('aiErrorHint');
+
+    // ── API helper ─────────────────────────────────────────────────────
+    function api(method, url, body) {
+      var opts = {
+        method: method,
+        headers: Object.assign(
+          { 'Content-Type': 'application/json' },
+          authToken ? { 'Authorization': 'Bearer ' + authToken } : {}
+        ),
+      };
+      if (body !== undefined && body !== null) opts.body = JSON.stringify(body);
+      return fetch(url, opts);
+    }
+
+    // ── Status bar ─────────────────────────────────────────────────────
+    var statusTimer;
+    function setStatus(msg, isError) {
+      clearTimeout(statusTimer);
+      statusText.textContent = msg;
+      statusText.className = (isError ? 'ml-auto text-xs text-red-500' : 'ml-auto text-xs text-gray-500') + ' flex-shrink-0';
+      if (msg) statusTimer = setTimeout(function () { statusText.textContent = ''; }, 4000);
+    }
+
+    // ── Page switching ─────────────────────────────────────────────────
+    function showLogin() {
+      loginPage.style.display = '';
+      appPage.style.display = 'none';
+      aiModal.style.display = 'none';
+      hasContent = false;
+    }
+
+    function showApp() {
+      loginPage.style.display = 'none';
+      appPage.style.display = 'flex';
+      userEmailDisplay.textContent = currentUser ? currentUser.email : '';
+      resizeCanvas();
+      refreshSaves();
+    }
+
+    // ── Auth check on load ─────────────────────────────────────────────
+    function checkAuth() {
+      if (!authToken) { showLogin(); return; }
+      api('GET', '/api/auth/me').then(function (res) {
+        if (res.ok) {
+          return res.json().then(function (d) {
+            currentUser = d.user;
+            showApp();
+          });
+        }
+        authToken = null;
+        localStorage.removeItem('canvas_token');
+        showLogin();
+      }).catch(function () { showLogin(); });
+    }
+
+    // ── Login form ─────────────────────────────────────────────────────
+    loginForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      loginError.hidden = true;
+
+      var email    = loginEmail.value.trim();
+      var password = loginPassword.value;
+      if (!email || !password) {
+        loginError.textContent = '이메일과 비밀번호를 입력해주세요.';
+        loginError.hidden = false;
+        return;
+      }
+
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password }),
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            loginError.textContent = data.message || '로그인 실패';
+            loginError.hidden = false;
+            return;
+          }
+          authToken   = data.token;
+          currentUser = data.user;
+          localStorage.setItem('canvas_token', authToken);
+          showApp();
+        });
+      }).catch(function (err) {
+        loginError.textContent = '서버 오류: ' + err.message;
+        loginError.hidden = false;
+      });
+    });
+
+    // ── Logout ─────────────────────────────────────────────────────────
+    logoutBtn.addEventListener('click', function () {
+      authToken   = null;
+      currentUser = null;
+      localStorage.removeItem('canvas_token');
+      closeOffcanvasPanel();
+      showLogin();
+    });
+
+    // ── Offcanvas ──────────────────────────────────────────────────────
+    function openOffcanvasPanel() {
+      offcanvas.classList.remove('-translate-x-full');
+      offcanvasBackdrop.hidden = false;
+    }
+    function closeOffcanvasPanel() {
+      offcanvas.classList.add('-translate-x-full');
+      offcanvasBackdrop.hidden = true;
+    }
+
+    openOffcanvasBtn.addEventListener('click', openOffcanvasPanel);
+    closeOffcanvasBtn.addEventListener('click', closeOffcanvasPanel);
+    offcanvasBackdrop.addEventListener('click', closeOffcanvasPanel);
+
+    // ── Saved works list ───────────────────────────────────────────────
+    function refreshSaves() {
+      api('GET', '/api/saves').then(function (res) {
+        if (!res.ok) return;
+        res.json().then(function (d) { renderSavesList(d.saves); });
+      }).catch(function (err) { console.error('Failed to refresh saves:', err); });
+    }
+
+    function renderSavesList(saves) {
+      if (!saves || !saves.length) {
+        savesList.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">저장된 작업이 없습니다</p>';
+        return;
+      }
+
+      var groups = {};
+      saves.forEach(function (s) {
+        var key = new Date(s.created_at).toLocaleDateString('ko-KR');
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(s);
+      });
+
+      var html = Object.keys(groups).map(function (date) {
+        var items = groups[date].map(function (item) {
+          var time = new Date(item.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          return '<div class="group flex items-center hover:bg-indigo-50 rounded-lg mx-1 my-0.5">' +
+            '<button class="flex-1 text-left px-3 py-2.5 flex items-center gap-2 load-btn" data-id="' + item.id + '">' +
+            '<span class="text-indigo-400 group-hover:text-indigo-600 text-base">🖼</span>' +
+            '<span class="text-sm text-gray-700 group-hover:text-indigo-700">' + time + '</span>' +
+            '</button>' +
+            '<button class="px-2 py-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity del-btn flex-shrink-0" data-id="' + item.id + '" title="삭제">✕</button>' +
+            '</div>';
+        }).join('');
+        return '<div class="mb-1">' +
+          '<p class="text-xs font-semibold text-gray-400 px-3 py-1.5 bg-gray-50 sticky top-0">' + date + '</p>' +
+          items + '</div>';
+      }).join('');
+
+      savesList.innerHTML = html;
+
+      savesList.querySelectorAll('.load-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { loadSave(Number(btn.dataset.id)); });
+      });
+      savesList.querySelectorAll('.del-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          deleteSave(Number(btn.dataset.id));
+        });
+      });
+    }
+
+    function loadSave(id) {
+      api('GET', '/api/saves/' + id).then(function (res) {
+        if (!res.ok) { setStatus('불러오기 실패', true); return; }
+        res.json().then(function (data) {
+          var img = new Image();
+          img.onload = function () {
+            clearDrawingLayer();
+            redrawBackground();
+            drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+            hasContent = true;
+            setStatus('불러오기 완료 ✓');
+            closeOffcanvasPanel();
+          };
+          img.onerror = function () { setStatus('이미지 로드 실패', true); };
+          img.src = data.canvas_data;
+        });
+      }).catch(function (err) { setStatus('불러오기 오류: ' + err.message, true); });
+    }
+
+    function deleteSave(id) {
+      if (!confirm('이 저장본을 삭제하시겠습니까?')) return;
+      api('DELETE', '/api/saves/' + id).then(function (res) {
+        if (res.ok) { setStatus('삭제 완료'); refreshSaves(); }
+      }).catch(function (err) { setStatus('삭제 오류: ' + err.message, true); });
+    }
+
+    refreshSavesBtn.addEventListener('click', refreshSaves);
+
+    // ── Canvas resize ──────────────────────────────────────────────────
+    function resizeCanvas() {
+      var container = bgCanvas.parentElement;
+      var w = container.clientWidth;
+      var h = container.clientHeight;
+      bgCanvas.width  = drawCanvas.width  = w;
+      bgCanvas.height = drawCanvas.height = h;
+      redrawBackground();
+    }
+
+    // ── Background / grid ──────────────────────────────────────────────
+    function drawGrid(spacing) {
+      spacing = spacing || 25;
+      bgCtx.strokeStyle = '#e0e0e0';
+      bgCtx.lineWidth = 1;
+      for (var x = 0; x < bgCanvas.width; x += spacing) {
+        bgCtx.beginPath(); bgCtx.moveTo(x, 0); bgCtx.lineTo(x, bgCanvas.height); bgCtx.stroke();
+      }
+      for (var y = 0; y < bgCanvas.height; y += spacing) {
+        bgCtx.beginPath(); bgCtx.moveTo(0, y); bgCtx.lineTo(bgCanvas.width, y); bgCtx.stroke();
+      }
+    }
+
+    function redrawBackground() {
+      bgCtx.fillStyle = '#ffffff';
+      bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+      if (useGrid) drawGrid();
+    }
+
+    // ── Canvas helpers ─────────────────────────────────────────────────
+    function mergeToDataUrl() {
+      var tmp = document.createElement('canvas');
+      tmp.width  = bgCanvas.width;
+      tmp.height = bgCanvas.height;
+      var ctx = tmp.getContext('2d');
+      ctx.drawImage(bgCanvas, 0, 0);
+      ctx.drawImage(drawCanvas, 0, 0);
+      return tmp.toDataURL('image/png');
+    }
+
+    function clearDrawingLayer() {
+      drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+      hasContent = false;
+    }
+
+    function saveLocalFile(type) {
+      var a = document.createElement('a');
+      a.download = 'drawing.' + type;
+      a.href = mergeToDataUrl().replace('image/png', 'image/' + type);
+      a.click();
+    }
+
+    // ── Save to server ─────────────────────────────────────────────────
+    saveToServerBtn.addEventListener('click', function () {
+      setStatus('저장 중…');
+      api('POST', '/api/saves', { canvasData: mergeToDataUrl() }).then(function (res) {
+        res.json().then(function (d) {
+          if (!res.ok) { setStatus(d.message || '저장 실패', true); return; }
+          setStatus('저장 완료 ✓');
+          refreshSaves();
+        });
+      }).catch(function (err) { setStatus('저장 오류: ' + err.message, true); });
+    });
+
+    // ── AI Help ────────────────────────────────────────────────────────
+    aiHelpBtn.addEventListener('click', function () {
+      if (!hasContent) {
+        setStatus('그림을 먼저 그려주세요.', true);
+        return;
+      }
+      var imageData = mergeToDataUrl();
+
+      aiModal.style.display = 'flex';
+      aiLoading.hidden = false;
+      aiResult.hidden  = true;
+      aiError.hidden   = true;
+      aiSketchPreview.src = imageData;
+
+      api('POST', '/api/ai/enhance', { imageData: imageData }).then(function (res) {
+        res.json().then(function (data) {
+          aiLoading.hidden = true;
+          if (!res.ok) {
+            aiErrorMsg.textContent  = data.message || 'AI 서비스 오류';
+            aiErrorHint.textContent = data.hint || '';
+            aiError.hidden = false;
+            return;
+          }
+          aiDescription.textContent = data.description;
+          aiResult.hidden = false;
+        });
+      }).catch(function (err) {
+        aiLoading.hidden = true;
+        aiErrorMsg.textContent  = '연결 오류: ' + err.message;
+        aiErrorHint.textContent = 'Ollama 서비스가 실행 중인지 확인하세요.';
+        aiError.hidden = false;
+      });
+    });
+
+    function closeAiModalFn() { aiModal.style.display = 'none'; }
+    closeAiModalBtn.addEventListener('click', closeAiModalFn);
+    aiModal.addEventListener('click', function (e) { if (e.target === aiModal) closeAiModalFn(); });
+
+    // ── Canvas drawing events ──────────────────────────────────────────
+    window.addEventListener('resize', resizeCanvas);
+
+    gridToggle.addEventListener('change', function (e) {
+      useGrid = e.target.checked;
+      redrawBackground();
+    });
+
+    drawCanvas.addEventListener('mousedown', function (e) {
+      drawing = true;
+      startX  = e.offsetX;
+      startY  = e.offsetY;
+
+      if (currentTool === 'pen' || currentTool === 'eraser') {
+        drawCtx.beginPath();
+        drawCtx.moveTo(startX, startY);
+      } else {
+        snapshotBeforeShape = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+      }
+    });
+
+    drawCanvas.addEventListener('mousemove', function (e) {
+      if (!drawing) return;
+      var ex = e.offsetX, ey = e.offsetY;
+
+      if (currentTool === 'pen' || currentTool === 'eraser') {
+        drawCtx.lineWidth   = brushSize;
+        drawCtx.lineCap     = 'round';
+        drawCtx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : brushColor;
+        drawCtx.lineTo(ex, ey);
+        drawCtx.stroke();
+        return;
+      }
+
+      if (snapshotBeforeShape) drawCtx.putImageData(snapshotBeforeShape, 0, 0);
+      drawCtx.lineWidth   = brushSize;
+      drawCtx.strokeStyle = brushColor;
+
+      if (currentTool === 'line') {
+        drawCtx.beginPath();
+        drawCtx.moveTo(startX, startY);
+        drawCtx.lineTo(ex, ey);
+        drawCtx.stroke();
+      } else if (currentTool === 'rect') {
+        drawCtx.strokeRect(startX, startY, ex - startX, ey - startY);
+      } else if (currentTool === 'circle') {
+        var r = Math.hypot(ex - startX, ey - startY);
+        drawCtx.beginPath();
+        drawCtx.arc(startX, startY, r, 0, Math.PI * 2);
+        drawCtx.stroke();
+      }
+    });
+
+    drawCanvas.addEventListener('mouseup', function () {
+      if (drawing) hasContent = true;
+      drawing = false;
+      snapshotBeforeShape = null;
+    });
+
+    drawCanvas.addEventListener('mouseleave', function () {
+      if (drawing && (currentTool === 'pen' || currentTool === 'eraser')) drawing = false;
+    });
+
+    // ── Toolbar event wiring ───────────────────────────────────────────
+    colorPicker.addEventListener('input', function (e) { brushColor = e.target.value; });
+    brushSizeInput.addEventListener('input', function (e) {
+      brushSize = Number(e.target.value);
+      brushSizeLabel.textContent = brushSize;
+    });
+    toolSelect.addEventListener('change', function (e) { currentTool = e.target.value; });
+    clearBtn.addEventListener('click', clearDrawingLayer);
+    savePngBtn.addEventListener('click', function () { saveLocalFile('png'); });
+    saveJpgBtn.addEventListener('click', function () { saveLocalFile('jpeg'); });
+
+    // ── Bootstrap ──────────────────────────────────────────────────────
+    checkAuth();
+  </script>
+</body>
+</html>
