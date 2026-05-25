@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Canvas Drawing</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
   <style>
     canvas { cursor: crosshair; }
   </style>
@@ -17,7 +18,7 @@
     <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
 
       <div class="text-center mb-8">
-        <div class="text-6xl mb-3">🎨</div>
+        <div class="text-6xl mb-3"><i class="fa-solid fa-palette text-indigo-500"></i></div>
         <h1 class="text-3xl font-bold text-gray-800">AI Canvas</h1>
         <p class="text-gray-500 mt-2 text-sm">로그인하여 그림을 그리고 AI로 발전시켜 보세요</p>
       </div>
@@ -44,8 +45,8 @@
 
       <div class="mt-5 p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-500">
         <p class="font-semibold mb-1 text-gray-600">테스트 계정</p>
-        <p>📧 test1@test.com &nbsp;/&nbsp; 🔑 123456</p>
-        <p>📧 test2@test.com &nbsp;/&nbsp; 🔑 123456</p>
+        <p><i class="fa-solid fa-envelope"></i> test1@test.com &nbsp;/&nbsp; <i class="fa-solid fa-key"></i> 123456</p>
+        <p><i class="fa-solid fa-envelope"></i> test2@test.com &nbsp;/&nbsp; <i class="fa-solid fa-key"></i> 123456</p>
       </div>
     </div>
   </div>
@@ -66,13 +67,13 @@
       <!-- User header -->
       <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-5 py-4 flex items-center gap-3">
         <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center text-xl flex-shrink-0">
-          👤
+          <i class="fa-solid fa-user"></i>
         </div>
         <div class="min-w-0">
           <p id="userEmailDisplay" class="text-sm font-semibold truncate">user@example.com</p>
           <p class="text-xs text-indigo-200">로그인 중</p>
         </div>
-        <button id="closeOffcanvas" class="ml-auto text-white hover:text-indigo-200 text-lg flex-shrink-0">✕</button>
+        <button id="closeOffcanvas" class="ml-auto text-white hover:text-indigo-200 text-lg flex-shrink-0"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <!-- Drawing tools section -->
@@ -88,11 +89,11 @@
             <label class="text-xs text-gray-500 mb-1 block">도구</label>
             <select id="toolSelect"
                     class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500">
-              <option value="pen">🖊 펜</option>
-              <option value="eraser">🧹 지우개</option>
-              <option value="line">📏 직선</option>
-              <option value="rect">⬜ 사각형</option>
-              <option value="circle">⭕ 원</option>
+              <option value="pen">펜</option>
+              <option value="eraser">지우개</option>
+              <option value="line">직선</option>
+              <option value="rect"><i class="fa-regular fa-square"></i> 사각형</option>
+              <option value="circle"><i class="fa-regular fa-circle"></i> 원</option>
             </select>
           </div>
         </div>
@@ -129,7 +130,7 @@
       <div class="p-4 border-t bg-white">
         <button id="logoutBtn"
                 class="w-full py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-200 font-medium">
-          🚪 로그아웃
+          <i class="fa-solid fa-right-from-bracket"></i> 로그아웃
         </button>
       </div>
     </div>
@@ -138,34 +139,34 @@
     <div class="bg-white shadow-sm border-b px-3 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
       <button id="openOffcanvas"
               class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 text-sm font-medium flex-shrink-0">
-        ☰ 메뉴
+        <i class="fa-solid fa-bars"></i> 메뉴
       </button>
 
       <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
 
       <button id="clearBtn"
               class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex-shrink-0">
-        🗑 지우기
+        <i class="fa-solid fa-trash"></i> 지우기
       </button>
       <button id="savePngBtn"
               class="px-3 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 text-sm font-medium flex-shrink-0">
-        📥 PNG
+        <i class="fa-solid fa-download"></i> PNG
       </button>
       <button id="saveJpgBtn"
               class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm font-medium flex-shrink-0">
-        📥 JPG
+        <i class="fa-solid fa-download"></i> JPG
       </button>
 
       <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
 
       <button id="saveToServerBtn"
               class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
-        💾 저장
+        <i class="fa-solid fa-floppy-disk"></i> 저장
       </button>
 
       <button id="aiHelpBtn"
               class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
-        🤖 AI Help
+        <i class="fa-solid fa-robot"></i> AI Help
       </button>
 
       <span id="statusText" class="ml-auto text-xs text-gray-500 flex-shrink-0"></span>
@@ -189,9 +190,9 @@
 
       <div class="px-5 py-4 border-b flex items-center justify-between flex-shrink-0">
         <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-          🤖 AI 스케치 분석
+          <i class="fa-solid fa-robot"></i> AI 스케치 분석
         </h2>
-        <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">✕</button>
+        <button id="closeAiModal" class="text-gray-400 hover:text-gray-600 text-2xl leading-none"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <div class="flex-1 overflow-y-auto p-5">
@@ -223,7 +224,7 @@
         <!-- Error -->
         <div id="aiError" hidden>
           <div class="text-center py-8">
-            <div class="text-5xl mb-3">⚠️</div>
+            <div class="text-5xl mb-3"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i></div>
             <p id="aiErrorMsg" class="text-red-600 text-sm font-medium mb-3"></p>
             <div class="bg-gray-50 rounded-lg px-4 py-3 text-left">
               <p class="text-xs text-gray-500 font-medium mb-1">해결 방법:</p>
@@ -431,10 +432,10 @@
           var time = new Date(item.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
           return '<div class="group flex items-center hover:bg-indigo-50 rounded-lg mx-1 my-0.5">' +
             '<button class="flex-1 text-left px-3 py-2.5 flex items-center gap-2 load-btn" data-id="' + item.id + '">' +
-            '<span class="text-indigo-400 group-hover:text-indigo-600 text-base">🖼</span>' +
+            '<span class="text-indigo-400 group-hover:text-indigo-600 text-base"><i class="fa-regular fa-image"></i></span>' +
             '<span class="text-sm text-gray-700 group-hover:text-indigo-700">' + time + '</span>' +
             '</button>' +
-            '<button class="px-2 py-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity del-btn flex-shrink-0" data-id="' + item.id + '" title="삭제">✕</button>' +
+            '<button class="px-2 py-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity del-btn flex-shrink-0" data-id="' + item.id + '" title="삭제"><i class="fa-solid fa-xmark"></i></button>' +
             '</div>';
         }).join('');
         return '<div class="mb-1">' +
@@ -465,7 +466,7 @@
             redrawBackground();
             drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
             hasContent = true;
-            setStatus('불러오기 완료 ✓');
+            setStatus('불러오기 완료 <i class="fa-solid fa-check"></i>');
             closeOffcanvasPanel();
           };
           img.onerror = function () { setStatus('이미지 로드 실패', true); };
@@ -541,7 +542,7 @@
       api('POST', '/api/saves', { canvasData: mergeToDataUrl() }).then(function (res) {
         res.json().then(function (d) {
           if (!res.ok) { setStatus(d.message || '저장 실패', true); return; }
-          setStatus('저장 완료 ✓');
+          setStatus('저장 완료 <i class="fa-solid fa-check"></i>');
           refreshSaves();
         });
       }).catch(function (err) { setStatus('저장 오류: ' + err.message, true); });

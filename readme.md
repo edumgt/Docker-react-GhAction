@@ -1,6 +1,8 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
 # AI Canvas Drawing App
 
-## 📋 프로젝트 개요
+## <i class="fa-solid fa-clipboard-list"></i> 프로젝트 개요
 
 > **Docker Compose + MariaDB + JWT 인증 + AI(Ollama LLaVA) 기반 캔버스 드로잉 툴**
 
@@ -11,14 +13,14 @@
 - 테스트 계정: `test1@test.com / 123456`, `test2@test.com / 123456`
 - 로그인 후 **좌측 Offcanvas 패널**에서 본인의 저장 작업 목록을 날짜별로 확인
 - 저장 날짜 클릭 시 해당 시점의 캔버스 내용을 복원
-- 캔버스 **💾 저장** 버튼으로 서버(MariaDB)에 저장
+- 캔버스 **<i class="fa-solid fa-floppy-disk"></i> 저장** 버튼으로 서버(MariaDB)에 저장
 - **Tailwind CSS** 기반 전체 UI 디자인
-- **🤖 AI Help** 버튼 클릭 시 Ollama LLaVA 모델이 스케치를 분석하여 자연스러운 이미지로 표현한 상세 묘사 제공
+- **<i class="fa-solid fa-robot"></i> AI Help** 버튼 클릭 시 Ollama LLaVA 모델이 스케치를 분석하여 자연스러운 이미지로 표현한 상세 묘사 제공
 - Docker Compose로 Ollama 서비스 연동
 
 ---
 
-## 🚀 빠른 시작 (Docker Compose)
+## <i class="fa-solid fa-rocket"></i> 빠른 시작 (Docker Compose)
 
 ```bash
 # 1. 서비스 시작
@@ -36,7 +38,7 @@ open http://localhost:3000
 
 ---
 
-## 🔐 인증 / 테스트 계정
+## <i class="fa-solid fa-lock"></i> 인증 / 테스트 계정
 
 | 이메일 | 비밀번호 |
 |--------|----------|
@@ -49,7 +51,7 @@ open http://localhost:3000
 
 ---
 
-## 🏗 아키텍처
+## <i class="fa-solid fa-trowel-bricks"></i> 아키텍처
 
 ```
 Browser (Vite + Vanilla JS + Tailwind CSS)
@@ -70,7 +72,7 @@ Node.js HTTP Server (server.js)
 
 ---
 
-## 🎨 주요 기능
+## <i class="fa-solid fa-palette"></i> 주요 기능
 
 ### 드로잉 도구
 - **펜** / **지우개** / **직선** / **사각형** / **원**
@@ -79,20 +81,20 @@ Node.js HTTP Server (server.js)
 - PNG / JPG 로컬 다운로드
 
 ### 저장 / 불러오기 (MariaDB)
-1. 그림을 그린 후 **💾 저장** 클릭
-2. 좌측 **☰ 메뉴** → 날짜별 저장 목록 확인
+1. 그림을 그린 후 **<i class="fa-solid fa-floppy-disk"></i> 저장** 클릭
+2. 좌측 **<i class="fa-solid fa-bars"></i> 메뉴** → 날짜별 저장 목록 확인
 3. 저장 항목 클릭 → 해당 캔버스 복원
-4. ✕ 버튼으로 특정 저장본 삭제
+4. <i class="fa-solid fa-xmark"></i> 버튼으로 특정 저장본 삭제
 
 ### AI Help (Ollama LLaVA)
-1. 스케치를 그린 후 **🤖 AI Help** 클릭
+1. 스케치를 그린 후 **<i class="fa-solid fa-robot"></i> AI Help** 클릭
 2. 캔버스 이미지를 Ollama LLaVA 모델로 전송
 3. AI가 스케치를 분석하여 **자연스러운 이미지 묘사** 반환
 4. 원본 스케치 + AI 묘사를 모달에서 확인
 
 ---
 
-## 🐳 Docker Compose 서비스 구성
+## <i class="fa-brands fa-docker"></i> Docker Compose 서비스 구성
 
 | 서비스 | 이미지 | 포트 | 설명 |
 |--------|--------|------|------|
@@ -114,7 +116,7 @@ Node.js HTTP Server (server.js)
 
 ---
 
-## 🗃 데이터베이스 스키마
+## <i class="fa-solid fa-boxes-stacked"></i> 데이터베이스 스키마
 
 ```sql
 -- 회원 테이블
@@ -137,7 +139,7 @@ CREATE TABLE canvas_saves (
 
 ---
 
-## 🛠 로컬 개발
+## <i class="fa-solid fa-screwdriver-wrench"></i> 로컬 개발
 
 ```bash
 # 의존성 설치
@@ -153,7 +155,7 @@ DB_HOST=localhost npm run dev:server
 
 ---
 
-## 📦 기술 스택
+## <i class="fa-solid fa-box"></i> 기술 스택
 
 ### Frontend
 - **Vite** (빌드 도구)
@@ -179,22 +181,22 @@ DB_HOST=localhost npm run dev:server
 
 ---
 
-## 🔌 API 요약
+## <i class="fa-solid fa-plug"></i> API 요약
 
 | Method | Path | Auth | 설명 |
 |--------|------|------|------|
-| GET | /api/health | ✗ | 서버 상태 |
-| POST | /api/auth/login | ✗ | 로그인 |
-| GET | /api/auth/me | ✓ | 현재 사용자 |
-| GET | /api/saves | ✓ | 저장 목록 |
-| POST | /api/saves | ✓ | 캔버스 저장 |
-| GET | /api/saves/:id | ✓ | 저장본 조회 |
-| DELETE | /api/saves/:id | ✓ | 저장본 삭제 |
-| POST | /api/ai/enhance | ✓ | AI 스케치 분석 |
+| GET | /api/health | <i class="fa-solid fa-xmark"></i> | 서버 상태 |
+| POST | /api/auth/login | <i class="fa-solid fa-xmark"></i> | 로그인 |
+| GET | /api/auth/me | <i class="fa-solid fa-check"></i> | 현재 사용자 |
+| GET | /api/saves | <i class="fa-solid fa-check"></i> | 저장 목록 |
+| POST | /api/saves | <i class="fa-solid fa-check"></i> | 캔버스 저장 |
+| GET | /api/saves/:id | <i class="fa-solid fa-check"></i> | 저장본 조회 |
+| DELETE | /api/saves/:id | <i class="fa-solid fa-check"></i> | 저장본 삭제 |
+| POST | /api/ai/enhance | <i class="fa-solid fa-check"></i> | AI 스케치 분석 |
 
 ---
 
-## ⚠️ 프로덕션 배포 시 주의사항
+## <i class="fa-solid fa-triangle-exclamation"></i>️ 프로덕션 배포 시 주의사항
 
 1. `docker-compose.yml`의 `JWT_SECRET`을 **암호학적으로 안전한 랜덤 문자열(최소 32자)**로 교체하세요.  
    생성 명령: `openssl rand -hex 32`
@@ -207,7 +209,7 @@ DB_HOST=localhost npm run dev:server
 
 ---
 
-## 🎬 Playwright 자동화 데모 (원 2개 그리기 + AI 분석)
+## <i class="fa-solid fa-clapperboard"></i> Playwright 자동화 데모 (원 2개 그리기 + AI 분석)
 
 아래 스크린샷은 **Playwright** 브라우저 자동화로 캡처한 실제 실행 화면입니다.
 
@@ -218,7 +220,7 @@ DB_HOST=localhost npm run dev:server
 ![캔버스 - 원 2개](screenshots/canvas-two-circles.png)
  
 
-### 2️⃣ 🤖 AI Help — LLaVA 스케치 분석 결과
+### 2️⃣ <i class="fa-solid fa-robot"></i> AI Help — LLaVA 스케치 분석 결과
 
 **AI Help** 버튼을 클릭하면 Ollama LLaVA 모델이 캔버스 스케치를 분석하여 한국어로 이미지 묘사를 반환합니다.
 
