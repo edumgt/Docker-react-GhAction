@@ -8,3 +8,5 @@ build/
 *.tmp
 storage/
 playwright-canvas.cjs
+__pycache__/
+.claude/

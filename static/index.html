@@ -135,50 +135,194 @@
       </div>
     </div>
 
-    <!-- ── Top toolbar ─────────────────────────────────────────── -->
-    <div class="bg-white shadow-sm border-b px-3 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
-      <button id="openOffcanvas"
-              class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 text-sm font-medium flex-shrink-0">
-        <i class="fa-solid fa-bars"></i> 메뉴
+    <!-- ── View tabs ───────────────────────────────────────────── -->
+    <div class="bg-white border-b flex-shrink-0 flex">
+      <button id="tabDrawing"
+              class="px-5 py-2.5 text-sm font-semibold border-b-2 border-indigo-600 text-indigo-600 transition-colors">
+        <i class="fa-solid fa-pen"></i> 그리기
       </button>
-
-      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
-
-      <button id="clearBtn"
-              class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex-shrink-0">
-        <i class="fa-solid fa-trash"></i> 지우기
+      <button id="tabStock"
+              class="px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fa-solid fa-chart-line"></i> 주식 차트 분석
       </button>
-      <button id="savePngBtn"
-              class="px-3 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 text-sm font-medium flex-shrink-0">
-        <i class="fa-solid fa-download"></i> PNG
+      <button id="tabDart"
+              class="px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 transition-colors">
+        <i class="fa-solid fa-bullhorn"></i> 공시 속보
       </button>
-      <button id="saveJpgBtn"
-              class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm font-medium flex-shrink-0">
-        <i class="fa-solid fa-download"></i> JPG
-      </button>
-
-      <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
-
-      <button id="saveToServerBtn"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
-        <i class="fa-solid fa-floppy-disk"></i> 저장
-      </button>
-
-      <button id="aiHelpBtn"
-              class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
-        <i class="fa-solid fa-robot"></i> AI Help
-      </button>
-
-      <span id="statusText" class="ml-auto text-xs text-gray-500 flex-shrink-0"></span>
     </div>
 
-    <!-- ── Canvas area ─────────────────────────────────────────── -->
-    <div class="flex-1 relative overflow-hidden p-2 bg-gray-100">
-      <div class="relative w-full h-full rounded-xl shadow-md overflow-hidden">
-        <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white"></canvas>
-        <canvas id="drawingCanvas"    class="absolute top-0 left-0"></canvas>
+    <!-- ── Drawing view ────────────────────────────────────────── -->
+    <div id="drawingView" class="flex-1 flex flex-col overflow-hidden">
+
+      <!-- Top toolbar -->
+      <div class="bg-white shadow-sm border-b px-3 py-2 flex items-center gap-2 flex-wrap flex-shrink-0">
+        <button id="openOffcanvas"
+                class="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center gap-1.5 text-sm font-medium flex-shrink-0">
+          <i class="fa-solid fa-bars"></i> 메뉴
+        </button>
+
+        <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+        <button id="clearBtn"
+                class="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex-shrink-0">
+          <i class="fa-solid fa-trash"></i> 지우기
+        </button>
+        <button id="savePngBtn"
+                class="px-3 py-2 bg-sky-100 text-sky-700 rounded-lg hover:bg-sky-200 text-sm font-medium flex-shrink-0">
+          <i class="fa-solid fa-download"></i> PNG
+        </button>
+        <button id="saveJpgBtn"
+                class="px-3 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 text-sm font-medium flex-shrink-0">
+          <i class="fa-solid fa-download"></i> JPG
+        </button>
+
+        <div class="h-6 border-l border-gray-200 flex-shrink-0"></div>
+
+        <button id="saveToServerBtn"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+          <i class="fa-solid fa-floppy-disk"></i> 저장
+        </button>
+
+        <button id="aiHelpBtn"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-semibold flex items-center gap-1.5 flex-shrink-0 transition-colors">
+          <i class="fa-solid fa-robot"></i> AI Help
+        </button>
+
+        <span id="statusText" class="ml-auto text-xs text-gray-500 flex-shrink-0"></span>
       </div>
-    </div>
+
+      <!-- Canvas area -->
+      <div class="flex-1 relative overflow-hidden p-2 bg-gray-100">
+        <div class="relative w-full h-full rounded-xl shadow-md overflow-hidden">
+          <canvas id="backgroundCanvas" class="absolute top-0 left-0 bg-white"></canvas>
+          <canvas id="drawingCanvas"    class="absolute top-0 left-0"></canvas>
+        </div>
+      </div>
+    </div><!-- /drawingView -->
+
+    <!-- ── Stock chart analysis view ───────────────────────────── -->
+    <div id="stockView" style="display:none" class="flex-1 overflow-y-auto p-4 bg-gray-100">
+      <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+
+        <!-- Upload & history column -->
+        <div class="lg:col-span-1 flex flex-col gap-4">
+          <div class="bg-white rounded-xl shadow-sm border p-4">
+            <p class="text-sm font-semibold text-gray-700 mb-3">
+              <i class="fa-solid fa-chart-line text-indigo-500"></i> 차트 이미지 업로드
+            </p>
+            <label id="stockDropZone"
+                   class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-6 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
+              <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400"></i>
+              <span class="text-xs text-gray-500 text-center">클릭 또는 드래그하여<br>차트 스크린샷 업로드</span>
+              <input type="file" id="stockFileInput" accept="image/*" class="hidden" />
+            </label>
+            <img id="stockPreviewImg" class="mt-3 w-full rounded-lg border hidden" />
+            <button id="stockAnalyzeBtn" disabled
+                    class="mt-3 w-full bg-indigo-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+              <i class="fa-solid fa-magnifying-glass-chart"></i> 분석 시작
+            </button>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border flex flex-col overflow-hidden" style="max-height: 340px">
+            <div class="px-4 py-3 border-b flex items-center justify-between flex-shrink-0">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">분석 이력</p>
+              <button id="refreshStockHistoryBtn" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                새로고침
+              </button>
+            </div>
+            <div id="stockHistoryList" class="flex-1 overflow-y-auto p-2">
+              <p class="text-sm text-gray-400 text-center py-6">분석 이력이 없습니다</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result column -->
+        <div class="lg:col-span-2">
+          <div id="stockEmpty" class="bg-white rounded-xl shadow-sm border p-10 text-center text-gray-400">
+            <div class="text-4xl mb-3"><i class="fa-solid fa-chart-line"></i></div>
+            <p class="text-sm">차트 이미지를 업로드하고 분석을 시작하세요</p>
+          </div>
+
+          <div id="stockLoading" hidden class="bg-white rounded-xl shadow-sm border p-10 flex flex-col items-center gap-4">
+            <div class="w-14 h-14 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-gray-600 text-sm">AI(LLaVA 34B)가 차트를 분석 중입니다…</p>
+            <p class="text-gray-400 text-xs">최초 실행 시 모델 로딩에 수십 초가 걸릴 수 있습니다</p>
+          </div>
+
+          <div id="stockError" hidden class="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div class="text-4xl mb-3"><i class="fa-solid fa-triangle-exclamation text-amber-500"></i></div>
+            <p id="stockErrorMsg" class="text-red-600 text-sm font-medium mb-2"></p>
+            <div class="bg-gray-50 rounded-lg px-4 py-3 text-left">
+              <p class="text-xs text-gray-500 font-medium mb-1">해결 방법:</p>
+              <code id="stockErrorHint" class="text-xs text-gray-700 font-mono break-all"></code>
+            </div>
+          </div>
+
+          <div id="stockReport" hidden class="bg-white rounded-xl shadow-sm border p-5 flex flex-col gap-4">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <i class="fa-regular fa-clock"></i> <span id="stockReportTime"></span>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3">
+              <div class="bg-indigo-50 rounded-lg p-3 border border-indigo-100">
+                <p class="text-xs font-semibold text-indigo-700 mb-1"><i class="fa-solid fa-arrow-trend-up"></i> 추세</p>
+                <p id="stockTrend" class="text-sm text-gray-700 whitespace-pre-wrap"></p>
+              </div>
+              <div class="bg-sky-50 rounded-lg p-3 border border-sky-100">
+                <p class="text-xs font-semibold text-sky-700 mb-1"><i class="fa-solid fa-layer-group"></i> 지지선/저항선</p>
+                <p id="stockSupportResistance" class="text-sm text-gray-700 whitespace-pre-wrap"></p>
+              </div>
+              <div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100">
+                <p class="text-xs font-semibold text-emerald-700 mb-1"><i class="fa-solid fa-shapes"></i> 캔들/차트 패턴</p>
+                <p id="stockPattern" class="text-sm text-gray-700 whitespace-pre-wrap"></p>
+              </div>
+              <div class="bg-amber-50 rounded-lg p-3 border border-amber-100">
+                <p class="text-xs font-semibold text-amber-700 mb-1"><i class="fa-solid fa-chart-column"></i> 이동평균선/거래량</p>
+                <p id="stockIndicators" class="text-sm text-gray-700 whitespace-pre-wrap"></p>
+              </div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 border">
+              <p class="text-xs font-semibold text-gray-700 mb-1"><i class="fa-solid fa-clipboard-check"></i> 종합 의견</p>
+              <p id="stockSummary" class="text-sm text-gray-700 whitespace-pre-wrap"></p>
+            </div>
+            <div class="bg-red-50 rounded-lg p-3 border border-red-100">
+              <p class="text-xs font-semibold text-red-600 mb-1"><i class="fa-solid fa-circle-exclamation"></i> 유의사항</p>
+              <p id="stockDisclaimer" class="text-xs text-red-500 whitespace-pre-wrap"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /stockView -->
+
+    <!-- ── DART 공시 속보 view ─────────────────────────────────── -->
+    <div id="dartView" style="display:none" class="flex-1 overflow-y-auto p-4 bg-gray-100">
+      <div class="max-w-3xl mx-auto flex flex-col gap-4">
+
+        <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center justify-between flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <p class="text-sm font-semibold text-gray-700">DART 실시간 공시 속보</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="dartUpdatedAt" class="text-xs text-gray-400"></span>
+            <button id="refreshDartBtn" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">새로고침</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+          <div id="dartList" class="divide-y">
+            <p class="text-sm text-gray-400 text-center py-8">불러오는 중…</p>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-400 text-center">
+          출처: <a href="https://dart.fss.or.kr" target="_blank" rel="noopener" class="underline hover:text-gray-600">금융감독원 전자공시시스템(DART)</a> · 20초마다 자동 갱신
+        </p>
+      </div>
+    </div><!-- /dartView -->
 
   </div><!-- /appPage -->
 
@@ -283,6 +427,40 @@
     var saveToServerBtn = document.getElementById('saveToServerBtn');
     var aiHelpBtn       = document.getElementById('aiHelpBtn');
     var statusText      = document.getElementById('statusText');
+
+    var tabDrawing  = document.getElementById('tabDrawing');
+    var tabStock    = document.getElementById('tabStock');
+    var tabDart     = document.getElementById('tabDart');
+    var drawingView = document.getElementById('drawingView');
+    var stockView   = document.getElementById('stockView');
+    var dartView    = document.getElementById('dartView');
+
+    var dartList        = document.getElementById('dartList');
+    var dartUpdatedAt   = document.getElementById('dartUpdatedAt');
+    var refreshDartBtn  = document.getElementById('refreshDartBtn');
+    var dartPollTimer   = null;
+    var DART_POLL_INTERVAL_MS = 20000;
+
+    var stockFileInput          = document.getElementById('stockFileInput');
+    var stockDropZone           = document.getElementById('stockDropZone');
+    var stockPreviewImg         = document.getElementById('stockPreviewImg');
+    var stockAnalyzeBtn         = document.getElementById('stockAnalyzeBtn');
+    var stockHistoryList        = document.getElementById('stockHistoryList');
+    var refreshStockHistoryBtn  = document.getElementById('refreshStockHistoryBtn');
+    var stockEmpty              = document.getElementById('stockEmpty');
+    var stockLoading            = document.getElementById('stockLoading');
+    var stockError              = document.getElementById('stockError');
+    var stockErrorMsg           = document.getElementById('stockErrorMsg');
+    var stockErrorHint          = document.getElementById('stockErrorHint');
+    var stockReport             = document.getElementById('stockReport');
+    var stockReportTime         = document.getElementById('stockReportTime');
+    var stockTrend              = document.getElementById('stockTrend');
+    var stockSupportResistance  = document.getElementById('stockSupportResistance');
+    var stockPattern            = document.getElementById('stockPattern');
+    var stockIndicators         = document.getElementById('stockIndicators');
+    var stockSummary            = document.getElementById('stockSummary');
+    var stockDisclaimer         = document.getElementById('stockDisclaimer');
+    var stockImageData          = null;
 
     var aiModal         = document.getElementById('aiModal');
     var closeAiModalBtn = document.getElementById('closeAiModal');
@@ -389,6 +567,7 @@
       currentUser = null;
       localStorage.removeItem('canvas_token');
       closeOffcanvasPanel();
+      stopDartPolling();
       showLogin();
     });
 
@@ -585,6 +764,231 @@
     function closeAiModalFn() { aiModal.style.display = 'none'; }
     closeAiModalBtn.addEventListener('click', closeAiModalFn);
     aiModal.addEventListener('click', function (e) { if (e.target === aiModal) closeAiModalFn(); });
+
+    // ── View tabs (그리기 / 주식 차트 분석 / 공시 속보) ───────────────────
+    function setTabActive(btn, active) {
+      btn.classList.toggle('border-indigo-600', active);
+      btn.classList.toggle('text-indigo-600', active);
+      btn.classList.toggle('border-transparent', !active);
+      btn.classList.toggle('text-gray-500', !active);
+    }
+
+    function activateTab(tab) {
+      drawingView.style.display = tab === 'drawing' ? 'flex'  : 'none';
+      stockView.style.display   = tab === 'stock'   ? 'block' : 'none';
+      dartView.style.display    = tab === 'dart'     ? 'block' : 'none';
+
+      setTabActive(tabDrawing, tab === 'drawing');
+      setTabActive(tabStock,   tab === 'stock');
+      setTabActive(tabDart,    tab === 'dart');
+
+      if (tab === 'dart') {
+        startDartPolling();
+      } else {
+        stopDartPolling();
+        if (tab === 'drawing') resizeCanvas();
+        else refreshStockHistory();
+      }
+    }
+    tabDrawing.addEventListener('click', function () { activateTab('drawing'); });
+    tabStock.addEventListener('click', function () { activateTab('stock'); });
+    tabDart.addEventListener('click', function () { activateTab('dart'); });
+
+    // ── DART 공시 속보 ─────────────────────────────────────────────────
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    }
+
+    function formatDartTime(pubDate) {
+      var d = new Date(pubDate);
+      return isNaN(d.getTime()) ? '' : d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function renderDartList(items) {
+      if (!items || !items.length) {
+        dartList.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">공시 정보가 없습니다</p>';
+        return;
+      }
+      dartList.innerHTML = items.map(function (it) {
+        return '<a href="' + escapeHtml(it.link) + '" target="_blank" rel="noopener" class="block px-4 py-3 hover:bg-indigo-50 transition-colors">' +
+          '<div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 flex-shrink-0">' + escapeHtml(it.category || '공시') + '</span>' +
+          '<span class="text-xs text-gray-400 truncate">' + escapeHtml(it.corp) + '</span>' +
+          '<span class="text-xs text-gray-300 ml-auto flex-shrink-0">' + formatDartTime(it.pub_date) + '</span>' +
+          '</div>' +
+          '<p class="text-sm text-gray-800 truncate">' + escapeHtml(it.title) + '</p>' +
+          '</a>';
+      }).join('');
+    }
+
+    function fetchDartDisclosures() {
+      api('GET', '/api/dart/disclosures').then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            dartList.innerHTML = '<p class="text-sm text-red-500 text-center py-8">' + escapeHtml(data.message || '불러오기 실패') + '</p>';
+            return;
+          }
+          renderDartList(data.items);
+          dartUpdatedAt.textContent = '업데이트: ' + new Date(data.fetched_at * 1000).toLocaleTimeString('ko-KR');
+        });
+      }).catch(function (err) {
+        dartList.innerHTML = '<p class="text-sm text-red-500 text-center py-8">연결 오류: ' + escapeHtml(err.message) + '</p>';
+      });
+    }
+
+    function startDartPolling() {
+      fetchDartDisclosures();
+      stopDartPolling();
+      dartPollTimer = setInterval(fetchDartDisclosures, DART_POLL_INTERVAL_MS);
+    }
+
+    function stopDartPolling() {
+      if (dartPollTimer) {
+        clearInterval(dartPollTimer);
+        dartPollTimer = null;
+      }
+    }
+
+    refreshDartBtn.addEventListener('click', fetchDartDisclosures);
+
+    // ── Stock chart upload ────────────────────────────────────────────
+    function loadStockFile(file) {
+      if (!file || file.type.indexOf('image/') !== 0) {
+        setStatus('이미지 파일만 업로드할 수 있습니다.', true);
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        stockImageData = e.target.result;
+        stockPreviewImg.src = stockImageData;
+        stockPreviewImg.classList.remove('hidden');
+        stockAnalyzeBtn.disabled = false;
+      };
+      reader.onerror = function () { setStatus('이미지를 읽을 수 없습니다.', true); };
+      reader.readAsDataURL(file);
+    }
+
+    stockFileInput.addEventListener('change', function (e) {
+      if (e.target.files[0]) loadStockFile(e.target.files[0]);
+    });
+
+    ['dragover', 'drop'].forEach(function (evt) {
+      stockDropZone.addEventListener(evt, function (e) { e.preventDefault(); });
+    });
+    stockDropZone.addEventListener('dragover', function () {
+      stockDropZone.classList.add('border-indigo-400', 'bg-indigo-50');
+    });
+    stockDropZone.addEventListener('dragleave', function () {
+      stockDropZone.classList.remove('border-indigo-400', 'bg-indigo-50');
+    });
+    stockDropZone.addEventListener('drop', function (e) {
+      stockDropZone.classList.remove('border-indigo-400', 'bg-indigo-50');
+      if (e.dataTransfer.files[0]) loadStockFile(e.dataTransfer.files[0]);
+    });
+
+    // ── Stock chart analysis ──────────────────────────────────────────
+    function showStockState(state) {
+      stockEmpty.hidden   = state !== 'empty';
+      stockLoading.hidden = state !== 'loading';
+      stockError.hidden   = state !== 'error';
+      stockReport.hidden  = state !== 'report';
+    }
+
+    function renderStockReport(analysis, createdAt) {
+      stockReportTime.textContent = new Date(createdAt || Date.now()).toLocaleString('ko-KR');
+      stockTrend.textContent              = analysis.trend || '-';
+      stockSupportResistance.textContent  = analysis.support_resistance || '-';
+      stockPattern.textContent            = analysis.pattern || '-';
+      stockIndicators.textContent         = analysis.indicators || '-';
+      stockSummary.textContent            = analysis.summary || '-';
+      stockDisclaimer.textContent         = analysis.disclaimer || '본 분석은 참고용이며 투자 조언이 아닙니다.';
+      showStockState('report');
+    }
+
+    stockAnalyzeBtn.addEventListener('click', function () {
+      if (!stockImageData) return;
+      showStockState('loading');
+      api('POST', '/api/stock/analyze', { imageData: stockImageData }).then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) {
+            stockErrorMsg.textContent  = data.message || 'AI 분석 오류';
+            stockErrorHint.textContent = data.hint || '';
+            showStockState('error');
+            return;
+          }
+          renderStockReport(data.analysis, data.created_at);
+          refreshStockHistory();
+        });
+      }).catch(function (err) {
+        stockErrorMsg.textContent  = '연결 오류: ' + err.message;
+        stockErrorHint.textContent = 'Ollama 서비스가 실행 중인지 확인하세요.';
+        showStockState('error');
+      });
+    });
+
+    // ── Stock analysis history ────────────────────────────────────────
+    function refreshStockHistory() {
+      api('GET', '/api/stock/analyses').then(function (res) {
+        if (!res.ok) return;
+        res.json().then(function (d) { renderStockHistoryList(d.analyses); });
+      }).catch(function (err) { console.error('Failed to refresh stock history:', err); });
+    }
+
+    function renderStockHistoryList(items) {
+      if (!items || !items.length) {
+        stockHistoryList.innerHTML = '<p class="text-sm text-gray-400 text-center py-6">분석 이력이 없습니다</p>';
+        return;
+      }
+
+      var html = items.map(function (item) {
+        var dt = new Date(item.created_at).toLocaleString('ko-KR');
+        var snippet = (item.trend || '').slice(0, 24);
+        return '<div class="group flex items-center hover:bg-indigo-50 rounded-lg mx-1 my-0.5">' +
+          '<button class="flex-1 min-w-0 text-left px-3 py-2 flex items-center gap-2 stock-load-btn" data-id="' + item.id + '">' +
+          '<span class="text-indigo-400 group-hover:text-indigo-600 text-base flex-shrink-0"><i class="fa-solid fa-chart-line"></i></span>' +
+          '<span class="min-w-0"><span class="block text-xs text-gray-700 group-hover:text-indigo-700 truncate">' + dt + '</span>' +
+          (snippet ? '<span class="block text-xs text-gray-400 truncate">' + snippet + '</span>' : '') + '</span>' +
+          '</button>' +
+          '<button class="px-2 py-2 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity stock-del-btn flex-shrink-0" data-id="' + item.id + '" title="삭제"><i class="fa-solid fa-xmark"></i></button>' +
+          '</div>';
+      }).join('');
+
+      stockHistoryList.innerHTML = html;
+
+      stockHistoryList.querySelectorAll('.stock-load-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { loadStockAnalysis(Number(btn.dataset.id)); });
+      });
+      stockHistoryList.querySelectorAll('.stock-del-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          deleteStockAnalysis(Number(btn.dataset.id));
+        });
+      });
+    }
+
+    function loadStockAnalysis(id) {
+      api('GET', '/api/stock/analyses/' + id).then(function (res) {
+        if (!res.ok) { setStatus('불러오기 실패', true); return; }
+        res.json().then(function (data) {
+          stockImageData = data.image_data;
+          stockPreviewImg.src = stockImageData;
+          stockPreviewImg.classList.remove('hidden');
+          stockAnalyzeBtn.disabled = false;
+          renderStockReport(data.analysis, data.created_at);
+        });
+      }).catch(function (err) { setStatus('불러오기 오류: ' + err.message, true); });
+    }
+
+    function deleteStockAnalysis(id) {
+      if (!confirm('이 분석 이력을 삭제하시겠습니까?')) return;
+      api('DELETE', '/api/stock/analyses/' + id).then(function (res) {
+        if (res.ok) { setStatus('삭제 완료'); refreshStockHistory(); }
+      }).catch(function (err) { setStatus('삭제 오류: ' + err.message, true); });
+    }
+
+    refreshStockHistoryBtn.addEventListener('click', refreshStockHistory);
 
     // ── Canvas drawing events ──────────────────────────────────────────
     window.addEventListener('resize', resizeCanvas);
