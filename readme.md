@@ -84,6 +84,201 @@ FastAPI 서버 (server.py, uvicorn)
 
 ---
 
+## <i class="fa-brands fa-aws"></i> AWS 클라우드 / AI 전환 가이드
+
+현재 구현은 Ollama의 HTTP API를 직접 호출합니다. 따라서 `OLLAMA_URL`을 Bedrock 엔드포인트로
+바꾸는 것만으로는 동작하지 않습니다. AWS를 사용할 때는 `/api/ai/enhance`,
+`/api/stock/analyze`의 Ollama 호출부를 **AWS SDK for Python (`boto3`)의 Bedrock Runtime
+`Converse` 또는 `InvokeModel` 호출**로 교체해야 합니다.
+
+### 권장 리소스
+
+| 용도 | AWS 리소스 | 이 프로젝트에서의 역할 | 권장도 |
+|---|---|---|---|
+| 스케치·차트 이미지 이해 | **Amazon Bedrock + Amazon Nova Pro** | LLaVA를 대체하는 멀티모달 추론. 이미지와 프롬프트를 함께 전달해 묘사/구조화된 차트 분석 생성 | 필수 |
+| 이미지 생성 기능 확장(선택) | **Amazon Bedrock + Amazon Nova Canvas** | 사용자의 스케치/텍스트를 바탕으로 결과 이미지를 생성·편집하는 기능 추가 시 사용 | 선택 |
+| 유해 콘텐츠·개인정보 제어 | **Amazon Bedrock Guardrails** | 입력 이미지 설명 및 모델 응답의 유해성/PII 정책 적용 | 프로덕션 권장 |
+| 이미지 원본 보관 | **Amazon S3** | 현재 MariaDB의 base64 `LONGTEXT` 대신 캔버스·차트 이미지를 비공개 객체로 저장. DB에는 키/메타데이터만 보관 | 프로덕션 권장 |
+| 관계형 데이터 | **Amazon RDS for MariaDB** 또는 **Aurora MySQL-Compatible** | `users`, `canvas_saves`, `stock_analyses` 저장. 자동 백업·장애 조치가 필요하면 Aurora 선택 | 필수 |
+| 컨테이너 실행 | **Amazon ECS on Fargate + ECR** | FastAPI Docker 이미지를 빌드·배포하고 오토스케일링 | 프로덕션 권장 |
+| 공개 진입점 | **Application Load Balancer + ACM** | HTTPS 종료와 ECS 서비스 라우팅 | 프로덕션 권장 |
+| 인증·비밀·관측 | **Cognito / Secrets Manager / CloudWatch** | JWT 자체 발급 대체(선택), DB 비밀번호·JWT 키 보관, 로그·지표·알람 | 프로덕션 권장 |
+| 네트워크 보호 | **VPC(사설 서브넷), Security Groups, VPC Endpoints, WAF** | DB/ECS 비공개 배치, Bedrock·S3 사설 접근, 공개 API 보호 | 프로덕션 권장 |
+
+Amazon Nova Pro는 텍스트·이미지·비디오를 처리하는 멀티모달 모델이므로 이 앱의 두 분석
+기능에 적합합니다. 비용과 응답 시간을 더 우선하면 **Nova Lite**로 먼저 검증하고, 차트의
+세부 판독 품질이 중요하면 **Nova Pro**를 사용하세요. 실제 사용 가능 모델과 리전은 계정마다
+다를 수 있으므로 아래 명령으로 반드시 확인합니다.
+
+```
+Internet
+  │ HTTPS
+  ▼
+CloudFront / WAF (선택) ── ALB ── ECS Fargate: FastAPI
+                                      ├── Bedrock Runtime: Nova Pro / Guardrails
+                                      ├── S3: 캔버스·차트 원본
+                                      ├── RDS MariaDB 또는 Aurora MySQL
+                                      ├── Secrets Manager
+                                      └── CloudWatch
+```
+
+> **투자 데이터 주의:** Bedrock 응답도 투자 조언이 아닙니다. 기존의 고정 유의사항은 유지하고,
+> 모델 출력이 매수·매도 지시처럼 보이지 않도록 시스템 프롬프트와 Guardrails 정책을 함께 적용하세요.
+
+### 사전 준비
+
+아래 예시는 AWS CLI v2, `jq`, Linux `base64`를 기준으로 합니다. AWS CLI 자격 증명은 장기
+액세스 키 대신 IAM Identity Center 또는 ECS Task Role 사용을 권장합니다. 예시의 리전과
+리소스 이름은 조직 규칙에 맞게 바꾸세요.
+
+```bash
+# 한 번만 설정: Bedrock이 지원되는 리전을 선택
+export AWS_REGION=us-east-1
+export APP_NAME=ai-canvas
+export AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+
+# 계정/리전에서 호출 가능한 모델과 이미지 입력 가능 모델을 확인
+aws bedrock list-foundation-models \
+  --region "$AWS_REGION" \
+  --by-output-modality TEXT \
+  --query 'modelSummaries[?contains(inputModalities, `IMAGE`)].[modelId,modelName,providerName]' \
+  --output table
+
+# 사용할 모델의 세부 지원 여부 확인
+aws bedrock get-foundation-model \
+  --region "$AWS_REGION" \
+  --model-identifier amazon.nova-pro-v1:0
+```
+
+`AccessDeniedException`이 발생하면 해당 리전에서 모델 사용이 허용되었는지와 실행 역할의
+`bedrock:InvokeModel` 권한을 확인하세요. 모델 ID와 지원 리전은 수시로 달라질 수 있으므로
+코드나 IaC에 고정하기 전에 위 조회 결과를 기준으로 정합니다.
+
+### AWS CLI: Bedrock 이미지 분석 호출 확인
+
+다음은 로컬 차트 PNG 한 장을 Nova Pro에 보내는 독립 검증 예시입니다. 앱 코드 전환 전에
+권한, 모델 접근, 응답 형식을 먼저 확인할 수 있습니다. 이미지가 포함된 요청은 25 MB 제한을
+넘지 않도록 리사이즈하세요.
+
+```bash
+# chart.png를 Base64로 넣은 Bedrock native InvokeModel 요청 생성
+IMAGE_B64="$(base64 -w 0 chart.png)"
+jq -n --arg image "$IMAGE_B64" '{
+  schemaVersion: "messages-v1",
+  system: [{text: "You analyze stock-chart images. Return factual observations only; do not give investment advice."}],
+  messages: [{
+    role: "user",
+    content: [
+      {image: {format: "png", source: {bytes: $image}}},
+      {text: "차트의 추세, 지지/저항, 캔들 패턴, 이동평균·거래량을 한국어 JSON으로 요약하세요."}
+    ]
+  }],
+  inferenceConfig: {maxTokens: 1000, temperature: 0.2, topP: 0.9}
+}' > bedrock-chart-request.json
+
+aws bedrock-runtime invoke-model \
+  --region "$AWS_REGION" \
+  --model-id amazon.nova-pro-v1:0 \
+  --content-type application/json \
+  --accept application/json \
+  --cli-binary-format raw-in-base64-out \
+  --body fileb://bedrock-chart-request.json \
+  bedrock-chart-response.json
+
+jq -r '.output.message.content[] | select(.text) | .text' bedrock-chart-response.json
+```
+
+앱에서는 요청 본문을 직접 조립하기보다 `boto3.client("bedrock-runtime")`와 `converse`
+API를 사용하는 편이 이미지 바이트 처리와 대화 확장에 편리합니다. 단, 위 CLI 예시는
+`InvokeModel`의 모델별 native 형식을 보여 주기 위한 것입니다.
+
+### AWS CLI: 최소 권한 Task Role 정책
+
+ECS의 **Task Role**에는 액세스 키를 넣지 말고 다음처럼 필요한 모델·S3 경로·시크릿에만
+권한을 부여하세요. `YOUR_SECRET_ARN`은 실제 Secrets Manager ARN으로 교체합니다.
+
+```bash
+cat > /tmp/ai-canvas-task-policy.json <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "InvokeVisionModel",
+      "Effect": "Allow",
+      "Action": ["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+      "Resource": "arn:aws:bedrock:${AWS_REGION}::foundation-model/amazon.nova-pro-v1:0"
+    },
+    {
+      "Sid": "CanvasObjectsOnly",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": "arn:aws:s3:::${APP_NAME}-${AWS_ACCOUNT_ID}-${AWS_REGION}/uploads/*"
+    },
+    {
+      "Sid": "ReadApplicationSecrets",
+      "Effect": "Allow",
+      "Action": "secretsmanager:GetSecretValue",
+      "Resource": "YOUR_SECRET_ARN"
+    }
+  ]
+}
+EOF
+
+aws iam put-role-policy \
+  --role-name "${APP_NAME}-ecs-task-role" \
+  --policy-name "${APP_NAME}-runtime" \
+  --policy-document file:///tmp/ai-canvas-task-policy.json
+```
+
+Guardrails를 적용했다면 `bedrock:ApplyGuardrail` 권한을 추가하고, 애플리케이션의 Bedrock
+호출에 Guardrail ID와 버전을 함께 전달합니다. 실제 프로덕션 정책은 조직의 개인정보·콘텐츠
+규정을 반영해 검토하세요.
+
+### AWS CLI: S3 이미지 저장소와 비밀 만들기
+
+S3는 공개 ACL을 사용하지 않고, 기본 암호화·퍼블릭 액세스 차단을 적용합니다. 앱은 업로드
+이미지를 `uploads/{user_id}/{uuid}.png` 같은 키로 저장하고 DB에는 S3 키만 저장하는 구조를
+권장합니다.
+
+```bash
+export IMAGE_BUCKET="${APP_NAME}-${AWS_ACCOUNT_ID}-${AWS_REGION}"
+
+aws s3api create-bucket --bucket "$IMAGE_BUCKET" --region "$AWS_REGION"
+aws s3api put-public-access-block --bucket "$IMAGE_BUCKET" \
+  --public-access-block-configuration \
+  'BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true'
+aws s3api put-bucket-encryption --bucket "$IMAGE_BUCKET" \
+  --server-side-encryption-configuration \
+  '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"aws:kms"},"BucketKeyEnabled":true}]}'
+
+# 값은 셸 히스토리에 남지 않도록 운영 환경에서는 --secret-string 대신 안전한 배포 파이프라인을 사용
+aws secretsmanager create-secret \
+  --name "${APP_NAME}/production/app" \
+  --secret-string '{"JWT_SECRET":"REPLACE_ME","DB_PASSWORD":"REPLACE_ME"}'
+```
+
+> `us-east-1` 이외 리전에서 버킷을 만들 때는 `create-bucket`에
+> `--create-bucket-configuration LocationConstraint="$AWS_REGION"`을 추가하세요.
+> 이미 존재하는 버킷/시크릿을 다시 생성하면 실패하므로, 재실행 자동화는 IaC(CDK, CloudFormation,
+> Terraform)로 관리하는 것이 안전합니다.
+
+### 애플리케이션 전환 체크리스트
+
+1. `requirements.txt`에 `boto3`를 추가하고 `server.py`의 Ollama 요청을 Bedrock Runtime 호출로 교체합니다.
+2. `OLLAMA_URL` 대신 `AWS_REGION`, `BEDROCK_MODEL_ID`, `BEDROCK_GUARDRAIL_ID`,
+   `BEDROCK_GUARDRAIL_VERSION`, `S3_BUCKET`을 환경 변수/Task Definition에 설정합니다.
+3. ECS Task Role에 위 최소 권한을 부여하고 DB/JWT 값은 Secrets Manager에서 주입합니다.
+4. 이미지 원본을 S3로 이전한 뒤 `canvas_saves.canvas_data`, `stock_analyses.image_data`는 S3 키를 담도록
+   마이그레이션합니다. 기존 base64 데이터의 백필·롤백 계획을 먼저 준비하세요.
+5. Bedrock 호출의 지연 시간, 오류, 토큰 사용량을 CloudWatch에서 모니터링하고 예산 알림을 설정합니다.
+
+참고 문서: [Bedrock 모델 조회](https://docs.aws.amazon.com/bedrock/latest/userguide/models-get-info.html),
+[Amazon Nova Pro 모델 카드](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-amazon-nova-pro.html),
+[Nova 이미지 이해 요청 형식](https://docs.aws.amazon.com/nova/latest/userguide/modalities-image-examples.html),
+[Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html).
+
+---
+
 ## <i class="fa-solid fa-palette"></i> 주요 기능
 
 ### 그리기 도구
